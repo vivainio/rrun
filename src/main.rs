@@ -7,27 +7,32 @@ fn find_adjacent(path: &PathBuf, to_find: &str) -> Option<PathBuf> {
         path.join(to_find),
         path.join(to_find.to_owned() + ".cmd"),
         path.join(to_find.to_owned() + ".py"),
-        path.join(to_find).join("node_modules/.bin/".to_owned() + to_find + ".cmd")
+        path.join("node_modules/.bin/".to_owned() + to_find + ".cmd")
     ];
     for trie in tries {
         dbg!(&trie);
-        if trie.exists() {
+        if trie.is_file() {
             return Some(trie);
         }
     }
     None
 }
 
-fn find_in_parents(to_find: &str) -> Option<PathBuf> {
+fn find_in_parents(to_find: &str) -> Option<(PathBuf, PathBuf)> {
     let mut curpath = std::env::current_dir().unwrap();
     loop {
         let found = find_adjacent(&curpath, &to_find);
-        if found.is_some() {
-            return found;
-        }
-        let popped = curpath.pop();
-        if !popped {
-            return None
+        match found {
+            Some(name ) => {
+                return Some((name, curpath));
+            }
+
+            None => {
+                let popped = curpath.pop();
+                if !popped {
+                    return None;
+                }
+            }
         }
     }
 }
@@ -77,8 +82,7 @@ fn main() {
         None => {
             println!("No matching command found for: {}", &to_run);
         }
-        Some(cmd) => {
-            let in_path = cmd.parent().unwrap();
+        Some((cmd, in_path)) => {
             run_cmd_with_current_args(&in_path, &cmd);
         }
     }
