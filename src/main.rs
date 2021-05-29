@@ -5,6 +5,7 @@ use which;
 fn find_adjacent(path: &PathBuf, to_find: &str) -> Option<PathBuf> {
     let tries = vec![
         path.join(to_find),
+        path.join(to_find.to_owned() + ".exe"),
         path.join(to_find.to_owned() + ".cmd"),
         path.join(to_find.to_owned() + ".py"),
         path.join("node_modules/.bin/".to_owned() + to_find + ".cmd")
