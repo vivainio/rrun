@@ -89,9 +89,7 @@ fn do_main() -> Result<(), String>  {
 fn main() {
     let r = do_main();
     match r  {
-        Ok(_) => {
-
-        }
+        Ok(_) => (),
         Err(text) => {
             println!("{}", text);
         }
