@@ -74,17 +74,14 @@ fn adj() {
 }
 
 
-fn main() {
+fn main() -> Result<(), String>  {
     let mut args = std::env::args();
     args.next().unwrap();
-    let to_run = args.next().expect("Did not specify command to run");
-    let command = find_in_parents(&to_run);
-    match command {
-        None => {
-            println!("No matching command found for: {}", &to_run);
-        }
-        Some((cmd, in_path)) => {
-            run_cmd_with_current_args(&in_path, &cmd);
-        }
-    }
+    let to_run = args.next().ok_or("Usage: rrun <command> [arguments...]")?;
+    let command = find_in_parents(&to_run).ok_or("Command not found")?;
+
+    let (cmd, in_path) = command;
+
+    run_cmd_with_current_args(&in_path, &cmd);
+    Ok(())
 }
