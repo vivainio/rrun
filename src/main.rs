@@ -74,7 +74,7 @@ fn adj() {
 }
 
 
-fn main() -> Result<(), String>  {
+fn do_main() -> Result<(), String>  {
     let mut args = std::env::args();
     args.next().unwrap();
     let to_run = args.next().ok_or("Usage: rrun <command> [arguments...]")?;
@@ -84,4 +84,16 @@ fn main() -> Result<(), String>  {
 
     run_cmd_with_current_args(&in_path, &cmd);
     Ok(())
+}
+
+fn main() {
+    let r = do_main();
+    match r  {
+        Ok(_) => {
+
+        }
+        Err(text) => {
+            println!("{}", text);
+        }
+    }
 }
