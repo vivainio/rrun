@@ -1,21 +1,39 @@
 use std::path::{PathBuf, Path};
 use std::process::Command;
 use which;
+use std::collections::HashMap;
+use serde::{Deserialize};
+
+#[derive(Deserialize, Debug)]
+struct PackageJson {
+    scripts: HashMap<String, String>
+}
+
+
 
 fn find_adjacent(path: &PathBuf, to_find: &str) -> Option<PathBuf> {
     let tries = vec![
         path.join(to_find),
         path.join(to_find.to_owned() + ".exe"),
         path.join(to_find.to_owned() + ".cmd"),
+        path.join(to_find.to_owned() + ".bat"),
         path.join(to_find.to_owned() + ".py"),
         path.join("node_modules/.bin/".to_owned() + to_find + ".cmd")
     ];
     for trie in tries {
-        dbg!(&trie);
+        // dbg!(&trie);
         if trie.is_file() {
             return Some(trie);
         }
     }
+
+    // ok, maybe we get package.json?
+
+    let try_json = path.join("package.json");
+    let cont = std::fs::read_to_string(try_json).ok()?;
+    let read : PackageJson = serde_json::from_str(&cont).ok()?;
+    dbg!(read);
+
     None
 }
 
@@ -54,7 +72,7 @@ fn run_cmd_with_current_args(in_path: &Path, command: &PathBuf) {
         args_to_run.insert(0, find_in_path("python.exe").into())
     }
 
-    dbg!(&args_to_run);
+    // dbg!(&args_to_run);
 
     let main_command = args_to_run.first().unwrap();
 
@@ -76,6 +94,7 @@ fn adj() {
 
 fn do_main() -> Result<(), String>  {
     let mut args = std::env::args();
+    // the first one is garbage always, it's rrun.exe itself
     args.next().unwrap();
     let to_run = args.next().ok_or("Usage: rrun <command> [arguments...]")?;
     let command = find_in_parents(&to_run).ok_or("Command not found")?;
